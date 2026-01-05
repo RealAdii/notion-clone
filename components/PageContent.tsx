@@ -18,7 +18,46 @@ const COVER_GRADIENTS = [
   'from-teal-400 to-green-300',
 ];
 
-const EMOJIS = ['📄', '📝', '📚', '💡', '🎯', '🚀', '⭐', '🔥', '💻', '📊', '🎨', '📌', '✨', '💼', '📁', '🗂️'];
+const EMOJIS = [
+  // Smileys
+  '😀', '😃', '😄', '😁', '😅', '😂', '🤣', '😊', '😇', '🙂', '😉', '😌', '😍', '🥰', '😘', '😋',
+  '😎', '🤩', '🥳', '😏', '😒', '😞', '😔', '😟', '😕', '🙁', '😣', '😖', '😫', '😩', '🥺', '😢',
+  '😭', '😤', '😠', '😡', '🤬', '🤯', '😳', '🥵', '🥶', '😱', '😨', '😰', '😥', '😓', '🤗', '🤔',
+  '🤭', '🤫', '🤥', '😶', '😐', '😑', '😬', '🙄', '😯', '😦', '😧', '😮', '😲', '🥱', '😴', '🤤',
+  // People
+  '👋', '🤚', '🖐️', '✋', '🖖', '👌', '🤌', '🤏', '✌️', '🤞', '🤟', '🤘', '🤙', '👈', '👉', '👆',
+  '👇', '☝️', '👍', '👎', '✊', '👊', '🤛', '🤜', '👏', '🙌', '👐', '🤲', '🤝', '🙏', '💪', '🦾',
+  // Nature
+  '🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐮', '🐷', '🐸', '🐵', '🐔',
+  '🐧', '🐦', '🐤', '🦆', '🦅', '🦉', '🦇', '🐺', '🐗', '🐴', '🦄', '🐝', '🐛', '🦋', '🐌', '🐞',
+  '🌸', '💮', '🏵️', '🌹', '🥀', '🌺', '🌻', '🌼', '🌷', '🌱', '🌲', '🌳', '🌴', '🌵', '🌾', '🌿',
+  '🍀', '🍁', '🍂', '🍃', '🍄', '🌍', '🌎', '🌏', '🌕', '🌙', '⭐', '🌟', '✨', '⚡', '🔥', '🌈',
+  // Food
+  '🍎', '🍊', '🍋', '🍌', '🍉', '🍇', '🍓', '🫐', '🍒', '🍑', '🥭', '🍍', '🥥', '🥝', '🍅', '🥑',
+  '🍔', '🍟', '🍕', '🌭', '🥪', '🌮', '🌯', '🥗', '🍜', '🍝', '🍣', '🍱', '🍩', '🍪', '🎂', '🍰',
+  '☕', '🍵', '🧃', '🥤', '🍺', '🍷', '🥂', '🍾',
+  // Activities
+  '⚽', '🏀', '🏈', '⚾', '🥎', '🎾', '🏐', '🏉', '🥏', '🎱', '🏓', '🏸', '🏒', '🥅', '⛳', '🏹',
+  '🎣', '🥊', '🥋', '🎽', '🛹', '🛼', '🛷', '⛸️', '🥌', '🎿', '⛷️', '🏂', '🏋️', '🤸', '🏄', '🏊',
+  '🎮', '🎲', '🎯', '🎳', '🎪', '🎨', '🎭', '🎤', '🎧', '🎼', '🎹', '🥁', '🎷', '🎺', '🎸', '🪕',
+  // Travel
+  '🚗', '🚕', '🚌', '🚎', '🏎️', '🚓', '🚑', '🚒', '🚐', '🛻', '🚚', '🚛', '🚜', '🏍️', '🛵', '🚲',
+  '✈️', '🚀', '🛸', '🚁', '🛶', '⛵', '🚤', '🛥️', '🛳️', '🚢', '🗼', '🏰', '🏯', '🏟️', '🎡', '🎢',
+  // Objects
+  '⌚', '📱', '💻', '⌨️', '🖥️', '🖨️', '🖱️', '💽', '💾', '💿', '📀', '🎥', '📷', '📹', '📼', '🔍',
+  '💡', '🔦', '🏮', '📔', '📕', '📖', '📗', '📘', '📙', '📚', '📓', '📒', '📃', '📜', '📄', '📰',
+  '📑', '🔖', '💰', '💴', '💵', '💶', '💷', '💸', '💳', '🧾', '💹', '✉️', '📧', '📨', '📩', '📤',
+  '📥', '📦', '📫', '📪', '📬', '📭', '📮', '🗳️', '✏️', '✒️', '🖋️', '🖊️', '🖌️', '🖍️', '📝', '📁',
+  '📂', '🗂️', '📅', '📆', '📇', '📈', '📉', '📊', '📋', '📌', '📍', '📎', '🖇️', '📏', '📐', '✂️',
+  '🔒', '🔓', '🔑', '🗝️', '🔨', '🪓', '⛏️', '⚒️', '🛠️', '🗡️', '⚔️', '🔫', '🛡️', '🔧', '🔩', '⚙️',
+  // Symbols
+  '❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍', '🤎', '💔', '❣️', '💕', '💞', '💓', '💗', '💖',
+  '💘', '💝', '💟', '☮️', '✝️', '☪️', '🕉️', '☸️', '✡️', '🔯', '🕎', '☯️', '☦️', '🛐', '⛎', '♈',
+  '🔴', '🟠', '🟡', '🟢', '🔵', '🟣', '🟤', '⚫', '⚪', '🟥', '🟧', '🟨', '🟩', '🟦', '🟪', '🟫',
+  '✅', '❌', '❓', '❗', '💯', '🔱', '⚜️', '🔰', '♻️', '🎵', '🎶', '➕', '➖', '➗', '✖️', '♾️',
+  // Flags
+  '🏁', '🚩', '🎌', '🏴', '🏳️', '🏳️‍🌈', '🏴‍☠️',
+];
 
 interface PageContentProps {
   pageId: string;
@@ -34,6 +73,8 @@ export function PageContent({ pageId }: PageContentProps) {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const { updatePage } = usePages();
   const titleRef = useRef<HTMLTextAreaElement>(null);
+  const initialContentRef = useRef<string | null>(null);
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const fetchPage = useCallback(async () => {
     const { data: pageData, error: pageError } = await supabase
@@ -74,6 +115,11 @@ export function PageContent({ pageId }: PageContentProps) {
   }, [pageId]);
 
   useEffect(() => {
+    // Reset refs when page changes
+    initialContentRef.current = null;
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
     fetchPage();
   }, [fetchPage]);
 
@@ -90,9 +136,10 @@ export function PageContent({ pageId }: PageContentProps) {
     await updatePage(pageId, { title: newTitle });
   };
 
-  const handleContentChange = useCallback(
+  const saveContent = useCallback(
     async (html: string) => {
-      setContent(html);
+      if (!html && html !== '') return;
+
       setSaving(true);
 
       const { data: existingBlocks } = await supabase
@@ -119,23 +166,44 @@ export function PageContent({ pageId }: PageContentProps) {
     [pageId]
   );
 
-  const [debouncedContent, setDebouncedContent] = useState(content);
+  const handleContentChange = useCallback(
+    (html: string) => {
+      setContent(html);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (debouncedContent !== content) {
-        setDebouncedContent(content);
+      // Don't save if this is the initial load
+      if (initialContentRef.current === null) {
+        initialContentRef.current = html;
+        return;
       }
-    }, 500);
 
-    return () => clearTimeout(timer);
-  }, [content, debouncedContent]);
+      // Clear existing timeout
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
 
+      // Debounce save by 500ms
+      saveTimeoutRef.current = setTimeout(() => {
+        saveContent(html);
+      }, 500);
+    },
+    [saveContent]
+  );
+
+  // Mark content as initialized after fetch
   useEffect(() => {
-    if (debouncedContent && debouncedContent !== content) {
-      handleContentChange(debouncedContent);
+    if (!loading && initialContentRef.current === null) {
+      initialContentRef.current = content;
     }
-  }, [debouncedContent]);
+  }, [loading, content]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const handleIconChange = async (emoji: string) => {
     if (!page) return;
@@ -220,16 +288,18 @@ export function PageContent({ pageId }: PageContentProps) {
             {showEmojiPicker && (
               <>
                 <div className="fixed inset-0 z-40" onClick={() => setShowEmojiPicker(false)} />
-                <div className="absolute top-full left-0 mt-2 p-3 bg-white dark:bg-neutral-800 rounded-xl shadow-xl border border-neutral-200 dark:border-neutral-700 z-50 grid grid-cols-8 gap-1">
-                  {EMOJIS.map((emoji) => (
-                    <button
-                      key={emoji}
-                      onClick={() => handleIconChange(emoji)}
-                      className="w-9 h-9 text-xl hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-lg transition-colors flex items-center justify-center"
-                    >
-                      {emoji}
-                    </button>
-                  ))}
+                <div className="absolute top-full left-0 mt-2 p-3 bg-white dark:bg-neutral-800 rounded-xl shadow-xl border border-neutral-200 dark:border-neutral-700 z-50 w-[320px] max-h-[300px] overflow-y-auto">
+                  <div className="grid grid-cols-8 gap-1">
+                    {EMOJIS.map((emoji, index) => (
+                      <button
+                        key={`${emoji}-${index}`}
+                        onClick={() => handleIconChange(emoji)}
+                        className="w-8 h-8 text-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-lg transition-colors flex items-center justify-center"
+                      >
+                        {emoji}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </>
             )}
@@ -285,7 +355,7 @@ export function PageContent({ pageId }: PageContentProps) {
         <div className="pb-32">
           <Editor
             content={content}
-            onChange={setContent}
+            onChange={handleContentChange}
             placeholder="Press '/' for commands, or just start typing..."
           />
         </div>

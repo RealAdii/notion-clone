@@ -1,14 +1,13 @@
 'use client';
 
-import { useEditor, EditorContent, BubbleMenu } from '@tiptap/react';
+import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
 import Underline from '@tiptap/extension-underline';
 import Highlight from '@tiptap/extension-highlight';
 import Link from '@tiptap/extension-link';
-import TextStyle from '@tiptap/extension-text-style';
-import Color from '@tiptap/extension-color';
-import { useEffect, useState, useRef } from 'react';
+import { TextStyle, Color } from '@tiptap/extension-text-style';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import {
   Type,
   Heading1,
@@ -213,9 +212,10 @@ function ToolbarButton({ onClick, isActive, children, title }: ToolbarButtonProp
 interface ColorPickerProps {
   editor: ReturnType<typeof useEditor>;
   type: 'text' | 'highlight';
+  onColorSelect: () => void;
 }
 
-function ColorPicker({ editor, type }: ColorPickerProps) {
+function ColorPicker({ editor, type, onColorSelect }: ColorPickerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const colors = type === 'text' ? COLORS : HIGHLIGHTS;
 
@@ -236,12 +236,16 @@ function ColorPicker({ editor, type }: ColorPickerProps) {
       }
     }
     setIsOpen(false);
+    onColorSelect();
   };
 
   return (
     <div className="relative">
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        onMouseDown={(e) => {
+          e.preventDefault();
+          setIsOpen(!isOpen);
+        }}
         className="flex items-center gap-0.5 p-1.5 rounded-md text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
         title={type === 'text' ? 'Text color' : 'Highlight'}
       >
@@ -251,12 +255,15 @@ function ColorPicker({ editor, type }: ColorPickerProps) {
 
       {isOpen && (
         <>
-          <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
-          <div className="absolute top-full left-0 mt-1 p-2 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg shadow-xl z-50 grid grid-cols-5 gap-1">
+          <div className="fixed inset-0 z-40" onMouseDown={() => setIsOpen(false)} />
+          <div className="absolute bottom-full left-0 mb-1 p-2 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg shadow-xl z-50 grid grid-cols-5 gap-1">
             {colors.map((c) => (
               <button
                 key={c.name}
-                onClick={() => handleColorSelect(c.color)}
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  handleColorSelect(c.color);
+                }}
                 className="w-6 h-6 rounded-md border border-neutral-200 dark:border-neutral-600 hover:scale-110 transition-transform"
                 style={{ backgroundColor: c.color || (type === 'text' ? '#374151' : 'transparent') }}
                 title={c.name}
@@ -313,6 +320,98 @@ function LinkInput({ editor, onClose }: LinkInputProps) {
   );
 }
 
+// Floating Toolbar Component
+interface FloatingToolbarProps {
+  editor: ReturnType<typeof useEditor>;
+  position: { top: number; left: number } | null;
+}
+
+function FloatingToolbar({ editor, position }: FloatingToolbarProps) {
+  const [showLinkInput, setShowLinkInput] = useState(false);
+  const toolbarRef = useRef<HTMLDivElement>(null);
+
+  if (!editor || !position) return null;
+
+  return (
+    <div
+      ref={toolbarRef}
+      className="fixed flex items-center gap-0.5 px-1 py-1 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg shadow-xl z-[9999] animate-fade-in"
+      style={{
+        top: Math.max(10, position.top - 45),
+        left: Math.max(10, Math.min(position.left, window.innerWidth - 350)),
+      }}
+      onMouseDown={(e) => e.preventDefault()}
+    >
+      {showLinkInput ? (
+        <LinkInput editor={editor} onClose={() => setShowLinkInput(false)} />
+      ) : (
+        <>
+          <ToolbarButton
+            onClick={() => editor.chain().focus().toggleBold().run()}
+            isActive={editor.isActive('bold')}
+            title="Bold (Cmd+B)"
+          >
+            <Bold size={16} />
+          </ToolbarButton>
+
+          <ToolbarButton
+            onClick={() => editor.chain().focus().toggleItalic().run()}
+            isActive={editor.isActive('italic')}
+            title="Italic (Cmd+I)"
+          >
+            <Italic size={16} />
+          </ToolbarButton>
+
+          <ToolbarButton
+            onClick={() => editor.chain().focus().toggleUnderline().run()}
+            isActive={editor.isActive('underline')}
+            title="Underline (Cmd+U)"
+          >
+            <UnderlineIcon size={16} />
+          </ToolbarButton>
+
+          <ToolbarButton
+            onClick={() => editor.chain().focus().toggleStrike().run()}
+            isActive={editor.isActive('strike')}
+            title="Strikethrough"
+          >
+            <Strikethrough size={16} />
+          </ToolbarButton>
+
+          <ToolbarButton
+            onClick={() => editor.chain().focus().toggleCode().run()}
+            isActive={editor.isActive('code')}
+            title="Inline code"
+          >
+            <CodeIcon size={16} />
+          </ToolbarButton>
+
+          <div className="w-px h-5 bg-neutral-200 dark:bg-neutral-700 mx-1" />
+
+          <ColorPicker editor={editor} type="text" onColorSelect={() => {}} />
+          <ColorPicker editor={editor} type="highlight" onColorSelect={() => {}} />
+
+          <div className="w-px h-5 bg-neutral-200 dark:bg-neutral-700 mx-1" />
+
+          <ToolbarButton
+            onClick={() => {
+              if (editor.isActive('link')) {
+                editor.chain().focus().unsetLink().run();
+              } else {
+                setShowLinkInput(true);
+              }
+            }}
+            isActive={editor.isActive('link')}
+            title="Add link"
+          >
+            <LinkIcon size={16} />
+          </ToolbarButton>
+        </>
+      )}
+    </div>
+  );
+}
+
 // Main Editor Component
 interface EditorProps {
   content: string;
@@ -322,7 +421,7 @@ interface EditorProps {
 
 export function Editor({ content, onChange, placeholder = "Press '/' for commands..." }: EditorProps) {
   const [slashMenuPosition, setSlashMenuPosition] = useState<{ top: number; left: number } | null>(null);
-  const [showLinkInput, setShowLinkInput] = useState(false);
+  const [toolbarPosition, setToolbarPosition] = useState<{ top: number; left: number } | null>(null);
 
   const editor = useEditor({
     extensions: [
@@ -356,6 +455,20 @@ export function Editor({ content, onChange, placeholder = "Press '/' for command
     },
     onUpdate: ({ editor }) => {
       onChange(editor.getHTML());
+    },
+    onSelectionUpdate: ({ editor }) => {
+      const { from, to } = editor.state.selection;
+      const hasSelection = from !== to;
+
+      if (hasSelection) {
+        const coords = editor.view.coordsAtPos(from);
+        setToolbarPosition({
+          top: coords.top,
+          left: coords.left,
+        });
+      } else {
+        setToolbarPosition(null);
+      }
     },
   });
 
@@ -396,86 +509,22 @@ export function Editor({ content, onChange, placeholder = "Press '/' for command
     };
   }, [editor, slashMenuPosition]);
 
+  // Hide toolbar when clicking outside
+  useEffect(() => {
+    const handleMouseDown = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      // Don't hide if clicking on the toolbar itself
+      if (target.closest('[data-floating-toolbar]')) return;
+    };
+
+    document.addEventListener('mousedown', handleMouseDown);
+    return () => document.removeEventListener('mousedown', handleMouseDown);
+  }, []);
+
   return (
     <div className="relative">
-      {/* Bubble Menu - appears on text selection */}
-      {editor && (
-        <BubbleMenu
-          editor={editor}
-          tippyOptions={{
-            duration: 100,
-            placement: 'top',
-          }}
-          className="flex items-center gap-0.5 px-1 py-1 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg shadow-xl"
-        >
-          {showLinkInput ? (
-            <LinkInput editor={editor} onClose={() => setShowLinkInput(false)} />
-          ) : (
-            <>
-              <ToolbarButton
-                onClick={() => editor.chain().focus().toggleBold().run()}
-                isActive={editor.isActive('bold')}
-                title="Bold (Cmd+B)"
-              >
-                <Bold size={16} />
-              </ToolbarButton>
-
-              <ToolbarButton
-                onClick={() => editor.chain().focus().toggleItalic().run()}
-                isActive={editor.isActive('italic')}
-                title="Italic (Cmd+I)"
-              >
-                <Italic size={16} />
-              </ToolbarButton>
-
-              <ToolbarButton
-                onClick={() => editor.chain().focus().toggleUnderline().run()}
-                isActive={editor.isActive('underline')}
-                title="Underline (Cmd+U)"
-              >
-                <UnderlineIcon size={16} />
-              </ToolbarButton>
-
-              <ToolbarButton
-                onClick={() => editor.chain().focus().toggleStrike().run()}
-                isActive={editor.isActive('strike')}
-                title="Strikethrough"
-              >
-                <Strikethrough size={16} />
-              </ToolbarButton>
-
-              <ToolbarButton
-                onClick={() => editor.chain().focus().toggleCode().run()}
-                isActive={editor.isActive('code')}
-                title="Inline code"
-              >
-                <CodeIcon size={16} />
-              </ToolbarButton>
-
-              <div className="w-px h-5 bg-neutral-200 dark:bg-neutral-700 mx-1" />
-
-              <ColorPicker editor={editor} type="text" />
-              <ColorPicker editor={editor} type="highlight" />
-
-              <div className="w-px h-5 bg-neutral-200 dark:bg-neutral-700 mx-1" />
-
-              <ToolbarButton
-                onClick={() => {
-                  if (editor.isActive('link')) {
-                    editor.chain().focus().unsetLink().run();
-                  } else {
-                    setShowLinkInput(true);
-                  }
-                }}
-                isActive={editor.isActive('link')}
-                title="Add link"
-              >
-                <LinkIcon size={16} />
-              </ToolbarButton>
-            </>
-          )}
-        </BubbleMenu>
-      )}
+      {/* Floating Toolbar - appears on text selection */}
+      <FloatingToolbar editor={editor} position={toolbarPosition} />
 
       <EditorContent editor={editor} />
 
