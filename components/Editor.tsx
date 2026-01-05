@@ -1,9 +1,14 @@
 'use client';
 
-import { useEditor, EditorContent } from '@tiptap/react';
+import { useEditor, EditorContent, BubbleMenu } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
-import { useEffect, useCallback, useState, useRef } from 'react';
+import Underline from '@tiptap/extension-underline';
+import Highlight from '@tiptap/extension-highlight';
+import Link from '@tiptap/extension-link';
+import TextStyle from '@tiptap/extension-text-style';
+import Color from '@tiptap/extension-color';
+import { useEffect, useState, useRef } from 'react';
 import {
   Type,
   Heading1,
@@ -13,8 +18,18 @@ import {
   ListOrdered,
   Code,
   Quote,
+  Bold,
+  Italic,
+  Underline as UnderlineIcon,
+  Strikethrough,
+  Code as CodeIcon,
+  Highlighter,
+  Link as LinkIcon,
+  Palette,
+  ChevronDown,
 } from 'lucide-react';
 
+// Slash Menu
 interface SlashMenuProps {
   editor: ReturnType<typeof useEditor>;
   position: { top: number; left: number } | null;
@@ -30,6 +45,32 @@ const menuItems = [
   { label: 'Numbered List', description: 'Ordered list', icon: ListOrdered, command: 'orderedList' },
   { label: 'Code Block', description: 'Code snippet', icon: Code, command: 'codeBlock' },
   { label: 'Quote', description: 'Block quote', icon: Quote, command: 'blockquote' },
+];
+
+const COLORS = [
+  { name: 'Default', color: null },
+  { name: 'Gray', color: '#9ca3af' },
+  { name: 'Brown', color: '#a78bfa' },
+  { name: 'Orange', color: '#f97316' },
+  { name: 'Yellow', color: '#eab308' },
+  { name: 'Green', color: '#22c55e' },
+  { name: 'Blue', color: '#3b82f6' },
+  { name: 'Purple', color: '#a855f7' },
+  { name: 'Pink', color: '#ec4899' },
+  { name: 'Red', color: '#ef4444' },
+];
+
+const HIGHLIGHTS = [
+  { name: 'None', color: null },
+  { name: 'Gray', color: '#e5e7eb' },
+  { name: 'Brown', color: '#fef3c7' },
+  { name: 'Orange', color: '#fed7aa' },
+  { name: 'Yellow', color: '#fef08a' },
+  { name: 'Green', color: '#bbf7d0' },
+  { name: 'Blue', color: '#bfdbfe' },
+  { name: 'Purple', color: '#e9d5ff' },
+  { name: 'Pink', color: '#fbcfe8' },
+  { name: 'Red', color: '#fecaca' },
 ];
 
 function SlashMenu({ editor, position, onClose }: SlashMenuProps) {
@@ -65,7 +106,6 @@ function SlashMenu({ editor, position, onClose }: SlashMenuProps) {
   const executeCommand = (command: string) => {
     if (!editor) return;
 
-    // Delete the slash character
     editor.chain().focus().deleteRange({
       from: editor.state.selection.from - 1,
       to: editor.state.selection.from,
@@ -145,6 +185,135 @@ function SlashMenu({ editor, position, onClose }: SlashMenuProps) {
   );
 }
 
+// Toolbar Button Component
+interface ToolbarButtonProps {
+  onClick: () => void;
+  isActive?: boolean;
+  children: React.ReactNode;
+  title?: string;
+}
+
+function ToolbarButton({ onClick, isActive, children, title }: ToolbarButtonProps) {
+  return (
+    <button
+      onClick={onClick}
+      title={title}
+      className={`p-1.5 rounded-md transition-colors ${
+        isActive
+          ? 'bg-neutral-200 dark:bg-neutral-600 text-neutral-900 dark:text-white'
+          : 'text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700'
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
+// Color Picker Dropdown
+interface ColorPickerProps {
+  editor: ReturnType<typeof useEditor>;
+  type: 'text' | 'highlight';
+}
+
+function ColorPicker({ editor, type }: ColorPickerProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const colors = type === 'text' ? COLORS : HIGHLIGHTS;
+
+  if (!editor) return null;
+
+  const handleColorSelect = (color: string | null) => {
+    if (type === 'text') {
+      if (color) {
+        editor.chain().focus().setColor(color).run();
+      } else {
+        editor.chain().focus().unsetColor().run();
+      }
+    } else {
+      if (color) {
+        editor.chain().focus().toggleHighlight({ color }).run();
+      } else {
+        editor.chain().focus().unsetHighlight().run();
+      }
+    }
+    setIsOpen(false);
+  };
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center gap-0.5 p-1.5 rounded-md text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
+        title={type === 'text' ? 'Text color' : 'Highlight'}
+      >
+        {type === 'text' ? <Palette size={16} /> : <Highlighter size={16} />}
+        <ChevronDown size={12} />
+      </button>
+
+      {isOpen && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
+          <div className="absolute top-full left-0 mt-1 p-2 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg shadow-xl z-50 grid grid-cols-5 gap-1">
+            {colors.map((c) => (
+              <button
+                key={c.name}
+                onClick={() => handleColorSelect(c.color)}
+                className="w-6 h-6 rounded-md border border-neutral-200 dark:border-neutral-600 hover:scale-110 transition-transform"
+                style={{ backgroundColor: c.color || (type === 'text' ? '#374151' : 'transparent') }}
+                title={c.name}
+              />
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+// Link Input
+interface LinkInputProps {
+  editor: ReturnType<typeof useEditor>;
+  onClose: () => void;
+}
+
+function LinkInput({ editor, onClose }: LinkInputProps) {
+  const [url, setUrl] = useState('');
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (url) {
+      editor?.chain().focus().setLink({ href: url }).run();
+    }
+    onClose();
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="flex items-center gap-1">
+      <input
+        type="url"
+        value={url}
+        onChange={(e) => setUrl(e.target.value)}
+        placeholder="Enter URL..."
+        className="w-40 px-2 py-1 text-sm bg-transparent border border-neutral-300 dark:border-neutral-600 rounded-md focus:outline-none focus:border-blue-500"
+        autoFocus
+      />
+      <button
+        type="submit"
+        className="px-2 py-1 text-xs font-medium text-white bg-blue-500 rounded-md hover:bg-blue-600"
+      >
+        Add
+      </button>
+      <button
+        type="button"
+        onClick={onClose}
+        className="px-2 py-1 text-xs font-medium text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200"
+      >
+        Cancel
+      </button>
+    </form>
+  );
+}
+
+// Main Editor Component
 interface EditorProps {
   content: string;
   onChange: (html: string) => void;
@@ -153,6 +322,7 @@ interface EditorProps {
 
 export function Editor({ content, onChange, placeholder = "Press '/' for commands..." }: EditorProps) {
   const [slashMenuPosition, setSlashMenuPosition] = useState<{ top: number; left: number } | null>(null);
+  const [showLinkInput, setShowLinkInput] = useState(false);
 
   const editor = useEditor({
     extensions: [
@@ -164,6 +334,18 @@ export function Editor({ content, onChange, placeholder = "Press '/' for command
       Placeholder.configure({
         placeholder,
       }),
+      Underline,
+      Highlight.configure({
+        multicolor: true,
+      }),
+      Link.configure({
+        openOnClick: false,
+        HTMLAttributes: {
+          class: 'text-blue-500 underline cursor-pointer hover:text-blue-600',
+        },
+      }),
+      TextStyle,
+      Color,
     ],
     content,
     immediatelyRender: false,
@@ -199,7 +381,7 @@ export function Editor({ content, onChange, placeholder = "Press '/' for command
       }
     };
 
-    const handleClick = (e: MouseEvent) => {
+    const handleClick = () => {
       if (slashMenuPosition) {
         setSlashMenuPosition(null);
       }
@@ -216,7 +398,87 @@ export function Editor({ content, onChange, placeholder = "Press '/' for command
 
   return (
     <div className="relative">
+      {/* Bubble Menu - appears on text selection */}
+      {editor && (
+        <BubbleMenu
+          editor={editor}
+          tippyOptions={{
+            duration: 100,
+            placement: 'top',
+          }}
+          className="flex items-center gap-0.5 px-1 py-1 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg shadow-xl"
+        >
+          {showLinkInput ? (
+            <LinkInput editor={editor} onClose={() => setShowLinkInput(false)} />
+          ) : (
+            <>
+              <ToolbarButton
+                onClick={() => editor.chain().focus().toggleBold().run()}
+                isActive={editor.isActive('bold')}
+                title="Bold (Cmd+B)"
+              >
+                <Bold size={16} />
+              </ToolbarButton>
+
+              <ToolbarButton
+                onClick={() => editor.chain().focus().toggleItalic().run()}
+                isActive={editor.isActive('italic')}
+                title="Italic (Cmd+I)"
+              >
+                <Italic size={16} />
+              </ToolbarButton>
+
+              <ToolbarButton
+                onClick={() => editor.chain().focus().toggleUnderline().run()}
+                isActive={editor.isActive('underline')}
+                title="Underline (Cmd+U)"
+              >
+                <UnderlineIcon size={16} />
+              </ToolbarButton>
+
+              <ToolbarButton
+                onClick={() => editor.chain().focus().toggleStrike().run()}
+                isActive={editor.isActive('strike')}
+                title="Strikethrough"
+              >
+                <Strikethrough size={16} />
+              </ToolbarButton>
+
+              <ToolbarButton
+                onClick={() => editor.chain().focus().toggleCode().run()}
+                isActive={editor.isActive('code')}
+                title="Inline code"
+              >
+                <CodeIcon size={16} />
+              </ToolbarButton>
+
+              <div className="w-px h-5 bg-neutral-200 dark:bg-neutral-700 mx-1" />
+
+              <ColorPicker editor={editor} type="text" />
+              <ColorPicker editor={editor} type="highlight" />
+
+              <div className="w-px h-5 bg-neutral-200 dark:bg-neutral-700 mx-1" />
+
+              <ToolbarButton
+                onClick={() => {
+                  if (editor.isActive('link')) {
+                    editor.chain().focus().unsetLink().run();
+                  } else {
+                    setShowLinkInput(true);
+                  }
+                }}
+                isActive={editor.isActive('link')}
+                title="Add link"
+              >
+                <LinkIcon size={16} />
+              </ToolbarButton>
+            </>
+          )}
+        </BubbleMenu>
+      )}
+
       <EditorContent editor={editor} />
+
       <SlashMenu
         editor={editor}
         position={slashMenuPosition}
