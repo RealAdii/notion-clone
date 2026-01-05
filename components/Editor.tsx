@@ -101,29 +101,43 @@ function SlashMenu({ editor, position, onClose }: SlashMenuProps) {
     onClose();
   };
 
+  useEffect(() => {
+    setSelectedIndex(0);
+  }, [position]);
+
   if (!position) return null;
 
   return (
     <div
       ref={menuRef}
-      className="absolute bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg py-2 w-72 z-50"
-      style={{ top: position.top, left: position.left }}
+      className="fixed bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl shadow-2xl py-2 w-72 z-[9999] animate-fade-in"
+      style={{
+        top: Math.min(position.top, window.innerHeight - 400),
+        left: Math.min(position.left, window.innerWidth - 300),
+      }}
     >
-      <div className="px-3 py-1 text-xs text-gray-400 uppercase">Basic blocks</div>
+      <div className="px-3 py-1.5 text-[11px] font-medium text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">Basic blocks</div>
       {menuItems.map((item, index) => (
         <button
           key={item.command}
           onClick={() => executeCommand(item.command)}
-          className={`flex items-center gap-3 w-full px-3 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 ${
-            index === selectedIndex ? 'bg-gray-100 dark:bg-gray-700' : ''
+          onMouseEnter={() => setSelectedIndex(index)}
+          className={`flex items-center gap-3 w-full px-3 py-2 text-left transition-colors ${
+            index === selectedIndex
+              ? 'bg-neutral-100 dark:bg-neutral-700/50'
+              : 'hover:bg-neutral-50 dark:hover:bg-neutral-700/30'
           }`}
         >
-          <div className="w-10 h-10 bg-gray-100 dark:bg-gray-700 rounded flex items-center justify-center">
-            <item.icon size={20} className="text-gray-600 dark:text-gray-300" />
+          <div className={`w-11 h-11 rounded-lg flex items-center justify-center transition-colors ${
+            index === selectedIndex
+              ? 'bg-white dark:bg-neutral-600 shadow-sm'
+              : 'bg-neutral-100 dark:bg-neutral-700'
+          }`}>
+            <item.icon size={20} className="text-neutral-500 dark:text-neutral-400" />
           </div>
           <div>
-            <div className="text-sm font-medium text-gray-800 dark:text-gray-200">{item.label}</div>
-            <div className="text-xs text-gray-400">{item.description}</div>
+            <div className="text-sm font-medium text-neutral-700 dark:text-neutral-200">{item.label}</div>
+            <div className="text-xs text-neutral-400 dark:text-neutral-500">{item.description}</div>
           </div>
         </button>
       ))}
